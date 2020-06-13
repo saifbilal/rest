@@ -8,6 +8,23 @@ nova_name=$(ssh heat-admin@${compute} sudo virsh dumpxml ${vm_id} |grep 'nova:na
 echo $nova_name|cut -d '>' -f2|cut -d '<' -f1
 }
 
+#function to show mode of vm
+get_mode () {
+compute=$1
+vm_id=$2
+vm_mode=$(ssh heat-admin@${compute} sudo virsh numatune ${vm_id} | grep mode | awk -F ":" '{print $2}')
+echo $vm_mode
+}
+
+#function to show numa node of vm
+get_node () {
+compute=$1
+vm_id=$2
+vm_node=$(ssh heat-admin@${compute} sudo virsh numatune ${vm_id} | grep node | awk -F ":" '{print $2}')
+echo $vm_node
+}
+
+
 #function to check number of vcpus assigned to a VM
 get_num_vcpus () {
 compute=$1
@@ -25,6 +42,4 @@ echo $vcpu_list
 }
 
 
-for i in $(cat /etc/hosts | grep -i compute | awk '{print $2}'); do for j in $(ssh heat-admin@$i sudo virsh list --all| grep instance | awk '{print $2}'); do echo -e "${i} \t ${j} \t $(show_vnf_name ${i} ${j}) \t $(get_num_vcpus ${i} ${j}) \t $(get_cpu_list ${i} ${j})" ;done ;done
-
-
+for i in $(cat /etc/hosts | grep -i compute | awk '{print $2}'); do for j in $(ssh heat-admin@$i sudo virsh list --all| grep instance | awk '{print $2}'); do echo -e "${i} \t ${j} \t $(show_vnf_name ${i} ${j}) \t $(get_mode ${i} ${j}) \t $(get_node ${i} ${j}) \t$(get_num_vcpus ${i} ${j}) \t $(get_cpu_list ${i} ${j})" ;done ;done
